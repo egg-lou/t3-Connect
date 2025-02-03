@@ -21,7 +21,7 @@ db.run(`
 // Function to get all profiles from database
 const getProfiles = () => {
     const stmt = db.prepare('SELECT * FROM submissions ORDER BY id DESC')
-    return stmt.all() as ProfileCardProps[]
+    return stmt.all() as (ProfileCardProps & { id: number })[]
 }
 
 app.use(html())
@@ -53,31 +53,62 @@ app.ws('/ws', {
                 return
             }
 
-            // Insert new submission into database
-            const stmt = db.prepare(`
-                INSERT INTO submissions (name, message, linkedInUrl, githubUrl)
-                VALUES (?, ?, ?, ?)
-            `)
-            
-            stmt.run(
-                submission.name, 
-                submission.message || null, 
-                submission.linkedInUrl || null, 
-                submission.githubUrl || null
-            )
+            if (data.type === 'update' && data.id) {
+                // Update existing submission
+                const stmt = db.prepare(`
+                    UPDATE submissions 
+                    SET name = ?, message = ?, linkedInUrl = ?, githubUrl = ?
+                    WHERE id = ?
+                `)
+                
+                stmt.run(
+                    submission.name, 
+                    submission.message || null, 
+                    submission.linkedInUrl || null, 
+                    submission.githubUrl || null,
+                    data.id
+                )
 
-            // Send success response to the sender
-            ws.send(JSON.stringify({
-                type: 'success',
-                message: 'Profile added successfully'
-            }))
+                // Send success response to the sender
+                ws.send(JSON.stringify({
+                    type: 'success',
+                    message: 'Profile updated successfully'
+                }))
 
-            // Broadcast the new profile data to all clients
-            app.server?.publish('profiles', JSON.stringify({
-                type: 'profile',
-                data: submission
-            }))
+                // Broadcast the updated profile to all clients
+                app.server?.publish('profiles', JSON.stringify({
+                    type: 'profile_updated',
+                    data: { ...submission, id: data.id }
+                }))
+            } else {
+                // Insert new submission
+                const stmt = db.prepare(`
+                    INSERT INTO submissions (name, message, linkedInUrl, githubUrl)
+                    VALUES (?, ?, ?, ?)
+                `)
+                
+                const result = stmt.run(
+                    submission.name, 
+                    submission.message || null, 
+                    submission.linkedInUrl || null, 
+                    submission.githubUrl || null
+                )
 
+                const newId = result.lastInsertRowid
+
+                // Send success response to the sender with the new ID
+                ws.send(JSON.stringify({
+                    type: 'success',
+                    message: 'Profile added successfully',
+                    id: newId
+                }))
+
+                // Broadcast the new profile to all clients
+                app.server?.publish('profiles', JSON.stringify({
+                    type: 'profile',
+                    data: { ...submission, id: newId }
+                }))
+            }
         } catch (error) {
             console.error('Error processing WebSocket message:', error)
             ws.send(JSON.stringify({
