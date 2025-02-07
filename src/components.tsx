@@ -49,7 +49,7 @@ const Home = ({ initialProfiles }: HomeProps) => {
                                                 \${data.data.name}
                                             </div>
                                             <div class="collapse-content">
-                                                <div class="space-y-4">
+                                                <div class="space-y-4 max-h-[40vh] overflow-y-auto pr-2">
                                                     <p class="text-slate-700">\${data.data.message || 'No message provided'}</p>
                                                     <div class="flex gap-4">
                                                         \${data.data.linkedInUrl ? \`
@@ -81,8 +81,7 @@ const Home = ({ initialProfiles }: HomeProps) => {
                                                     </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                    \`;
+                                        \`;
                                     
                                     // Add to the list
                                     document.getElementById('profiles-list').insertBefore(
@@ -115,7 +114,7 @@ const Home = ({ initialProfiles }: HomeProps) => {
                                                     \${profile.name}
                                                 </div>
                                                 <div class="collapse-content">
-                                                    <div class="space-y-4">
+                                                    <div class="space-y-4 max-h-[40vh] overflow-y-auto pr-2">
                                                         <p class="text-slate-700">\${profile.message || 'No message provided'}</p>
                                                         <div class="flex gap-4">
                                                             \${profile.linkedInUrl ? \`
@@ -204,6 +203,29 @@ const Home = ({ initialProfiles }: HomeProps) => {
                         .animate-fade-in {
                             animation: fade-in 0.5s ease-out forwards;
                         }
+                        
+                        /* Hide scrollbar for Chrome, Safari and Opera */
+                        #profiles-list::-webkit-scrollbar {
+                            display: none;
+                        }
+                        
+                        /* Hide scrollbar for IE, Edge and Firefox */
+                        #profiles-list {
+                            -ms-overflow-style: none;  /* IE and Edge */
+                            scrollbar-width: none;  /* Firefox */
+                            height: calc(100vh - 200px); /* Adjust for header and padding */
+                        }
+
+                        /* Hide scrollbar for collapse content */
+                        .collapse-content div::-webkit-scrollbar {
+                            display: none;
+                        }
+                        
+                        .collapse-content div {
+                            -ms-overflow-style: none;
+                            scrollbar-width: none;
+                            max-height: calc(100vh - 300px); /* Adjust for header, padding, and collapse title */
+                        }
                     `}
                 </style>
             </head>
@@ -214,7 +236,7 @@ const Home = ({ initialProfiles }: HomeProps) => {
                             <h1 class="text-4xl font-bold text-sky-800 drop-shadow-lg">T3-Connect</h1>
                     </div>
 
-                    <div class="space-y-4" id="profiles-list">
+                    <div class="space-y-4 overflow-y-auto scroll-smooth" id="profiles-list">
                         {/* Profiles will be loaded via WebSocket */}
                     </div>
                 </div>
