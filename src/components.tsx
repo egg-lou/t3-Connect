@@ -26,7 +26,7 @@ const Home = ({ initialProfiles }: HomeProps) => {
                     let ws;
 
                     function connectWebSocket() {
-                        ws = new WebSocket('ws://127.0.0.1:4000/ws');
+                        ws = new WebSocket('/ws');
                         
                         ws.onopen = () => {
                             console.log('Connected to WebSocket');
