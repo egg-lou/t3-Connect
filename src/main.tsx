@@ -124,6 +124,7 @@ app.ws('/ws', {
     }
 })
 
-app.listen(PORT, () => {
-     console.log(`Server running on PORT: ${PORT}`)
- })
+app.listen({ port: PORT, hostname: "0.0.0.0" }, () => {
+    console.log(`Server running on PORT: ${PORT}`);
+});
+
